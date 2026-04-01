@@ -1,13 +1,39 @@
 # Using Darts for Time Series Analysis in Python
 
-**Published:** 2025-01-10
-**Medium:** [https://medium.com/@kyle-t-jones/using-darts-for-time-series-analysis-in-python-dc92e08c43e5](https://medium.com/@kyle-t-jones/using-darts-for-time-series-analysis-in-python-dc92e08c43e5)
+This project demonstrates time series forecasting using the Darts library, including ARIMA, Exponential Smoothing, LightGBM, LSTM, NBEATS, and FFT models.
 
-## About
+## Article
 
-Place the code for this article in this repository.
-The original article export is saved as `article.md`.
+Medium article: [Using Darts for Time Series Analysis in Python](https://medium.com/@kylejones_47003/using-darts-for-time-series-analysis-in-python-dc92e08c43e5)
 
-## Files
+## Project Structure
 
-Add your `.ipynb`, `.py`, `.yaml`, `.js`, `.ts`, or other project files here.
+```
+.
+├── README.md           # This file
+├── main.py            # Main entry point
+├── config.yaml        # Configuration file
+├── requirements.txt   # Python dependencies
+├── src/               # Core functions
+│   ├── core.py        # Forecasting functions
+│   └── plotting.py    # Tufte-style plotting utilities
+├── tests/             # Unit tests
+├── data/              # Data files (if needed)
+└── images/            # Generated plots and figures
+```
+
+## Configuration
+
+Edit `config.yaml` to customize:
+- Data source (FRED series ID or local file path)
+- Model parameters (ARIMA order, LSTM epochs, etc.)
+- Which models to run
+- Output settings
+
+Note: Set `api_key` in config.yaml or use `FRED_API_KEY` environment variable.
+
+## Caveats
+
+- Deep learning models (LSTM, NBEATS) are disabled by default in config.yaml due to longer training times. Enable them by setting `enabled: true`.
+- FRED API requires a free API key from https://fred.stlouisfed.org/docs/api/api_key.html
+- Data is automatically split before scaling to prevent data leakage.

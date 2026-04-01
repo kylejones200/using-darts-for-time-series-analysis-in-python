@@ -1,0 +1,7 @@
+pandas
+numpy
+matplotlib
+darts
+pyyaml
+requests
+pytest
