@@ -64,7 +64,7 @@ else:
     logging.error(f": {response.status_code}")
     logging.info(response.text)
 
-# # Darts for Time Series Analysis in Python
+# # Darts for Time Series Analysis in Python
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -673,7 +673,7 @@ df = pd.DataFrame({"Date": date_range, "Value": values})
 # Convert to TimeSeries object
 series = TimeSeries.from_dataframe(df, time_col="Date", value_cols="Value")
 series.head()
-"""Simple Forecasting with Darts
+"""Simple Forecasting with Darts
 Darts supports traditional methods like Exponential Smoothing and ARIMA for quick, interpretable forecasts.
 Exponential Smoothing"""
 from darts.models import ExponentialSmoothing
@@ -698,8 +698,8 @@ forecast = model.predict(10)
 series.plot(label="Actual")
 forecast.plot(label="Forecast")
 
-"""The autoARIMA implementations in other tools like statsmodels are easier to use than Darts. 
-Machine Learning Models in Darts
+"""The autoARIMA implementations in other tools like statsmodels are easier to use than Darts. 
+Machine Learning Models in Darts
 But that is just the start. Darts can also do more advanced forecasting with machine learning models like Random Forests and LightGBM.
 LightGBM"""
 from darts.models import LightGBMModel
@@ -712,7 +712,7 @@ forecast = model.predict(len(val))
 # Plot the results
 series.plot(label="Actual")
 forecast.plot(label="Forecast")
-"""Deep Learning Models in Darts
+"""Deep Learning Models in Darts
 Darts includes state-of-the-art deep learning models like LSTMs, N-BEATS, and transformers for handling complex patterns.
 LSTM"""
 from darts.models import RNNModel
@@ -724,7 +724,7 @@ forecast = model.predict(len(val))
 series.plot(label="Actual")
 forecast.plot(label="Forecast")
 
-%matplotlib inline
+# %matplotlib inline
 training, validation = series.split_before(pd.Timestamp("2024-01-01"))
 
 model = ExponentialSmoothing()
@@ -736,7 +736,7 @@ series.plot(label="actual")
 forecast.plot(label="forecast")
 plt.legend()
 
-# # Darts for Time Series Analysis in Python
+# # Darts for Time Series Analysis in Python
 
-!pip install darts
+# !pip install darts
 
