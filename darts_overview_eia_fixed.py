@@ -8,6 +8,12 @@ from sklearn.metrics import mean_absolute_error
 from darts import TimeSeries
 from darts.models import ExponentialSmoothing, NaiveSeasonal
 
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 np.random.seed(42)
 plt.rcParams.update(
     {
@@ -95,7 +101,7 @@ def main():
     results["NaiveSeasonal mean MAE"] = mean_mae
     preds["NaiveSeasonal"] = (y_true, y_pred)
 
-    print("\n".join(f"{k}: {v}" for k, v in results.items()))
+    logger.info("\n".join(f"{k}: {v}" for k, v in results.items()))
 
     plt.figure(figsize=(9, 4))
     ts.plot(label="history", alpha=0.6)

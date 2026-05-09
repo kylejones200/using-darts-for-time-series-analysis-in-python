@@ -8,6 +8,12 @@ from sklearn.metrics import mean_absolute_error
 from darts import TimeSeries
 from darts.models import ARIMA, Theta
 
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 np.random.seed(42)
 plt.rcParams.update(
     {
@@ -107,7 +113,7 @@ def main():
         tbats_mae = mean_absolute_error(tbats_df["true"], tbats_df["pred"])
         results["TBATS mean MAE (from CSV)"] = tbats_mae
 
-    print("\n".join(f"{k}: {v}" for k, v in results.items()))
+    logger.info("\n".join(f"{k}: {v}" for k, v in results.items()))
 
     # Tufte-style final figure: 2024 history, dashed vline at Jan 2025, forecasts/actuals Jan–Aug 2025 only
     start_2024 = pd.Period("2024-01", freq="M").start_time + pd.offsets.MonthBegin(0)
