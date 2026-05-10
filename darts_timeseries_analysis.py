@@ -297,20 +297,21 @@ def build_and_forecast(series, forecast_horizon=30, num_samples=1000):
     forecast = model.predict(n=forecast_horizon, num_samples=num_samples)
     return forecast
 
-def visualize_forecast(series, forecast, title, filename):
+def visualize_forecast(series, forecast, title, filename, plot: bool = False):
     """Visualize the original series and forecast."""
-    plt.figure(figsize=(12, 6))
-    series[-365:].plot(label="Actual", color='blue')  # Plot last year of actual data
-    forecast.plot(label="Forecast", color='red')
+    if plot:
+        plt.figure(figsize=(12, 6))
+        series[-365:].plot(label="Actual", color='blue')  # Plot last year of actual data
+        forecast.plot(label="Forecast", color='red')
     
-    plt.title(title)
-    plt.xlabel("Date")
-    plt.ylabel("Spread")
-    plt.legend()
-    plt.grid(True)
-    plt.savefig(filename)
-    plt.tight_layout()
-    plt.show()
+        plt.title(title)
+        plt.xlabel("Date")
+        plt.ylabel("Spread")
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(filename)
+        plt.tight_layout()
+        plt.show()
 
 # Main execution
 if __name__ == "__main__":
@@ -414,20 +415,21 @@ def generate_torch_kwargs():
         }
     }
 
-def display_forecast(pred_series, ts_transformed, forecast_type, start_date=None):
-    plt.figure(figsize=(12, 6))
-    if start_date:
-        ts_transformed = ts_transformed.drop_before(start_date)
-    ts_transformed.plot(label="Actual")
-    pred_series.plot(label=f"{forecast_type.capitalize()} Forecast")
-    plt.title(f"10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity\nR2: {r2_score(ts_transformed, pred_series):.4f}")
-    plt.xlabel("Date")
-    plt.ylabel("Spread")
-    plt.legend()
-    plt.grid(False)
-    plt.tight_layout()
-    plt.savefig(f"NBEATS_{forecast_type}_Forecast.png")
-    plt.show()
+def display_forecast(pred_series, ts_transformed, forecast_type, start_date=None, plot: bool = False):
+    if plot:
+        plt.figure(figsize=(12, 6))
+        if start_date:
+            ts_transformed = ts_transformed.drop_before(start_date)
+        ts_transformed.plot(label="Actual")
+        pred_series.plot(label=f"{forecast_type.capitalize()} Forecast")
+        plt.title(f"10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity\nR2: {r2_score(ts_transformed, pred_series):.4f}")
+        plt.xlabel("Date")
+        plt.ylabel("Spread")
+        plt.legend()
+        plt.grid(False)
+        plt.tight_layout()
+        plt.savefig(f"NBEATS_{forecast_type}_Forecast.png")
+        plt.show()
 
 if __name__ == "__main__":
     import os
@@ -566,19 +568,20 @@ def generate_torch_kwargs():
         }
     }
 
-def plot_forecast(train, val, pred, title):
-    plt.figure(figsize=(12, 6))
-    train.plot(label="Train")
-    val.plot(label="Validation")
-    pred.plot(label="Prediction")
-    plt.title(title)
-    plt.xlabel("Date")
-    plt.ylabel("Spread")
-    plt.legend()
-    plt.grid(False)
-    plt.tight_layout()
-    plt.savefig(f"{title.replace(' ', '_')}.png")
-    plt.show()
+def plot_forecast(train, val, pred, title, plot: bool = False):
+    if plot:
+        plt.figure(figsize=(12, 6))
+        train.plot(label="Train")
+        val.plot(label="Validation")
+        pred.plot(label="Prediction")
+        plt.title(title)
+        plt.xlabel("Date")
+        plt.ylabel("Spread")
+        plt.legend()
+        plt.grid(False)
+        plt.tight_layout()
+        plt.savefig(f"{title.replace(' ', '_')}.png")
+        plt.show()
     logging.info(f"MAE: {mae(pred, val):.4f}")
 
 if __name__ == "__main__":

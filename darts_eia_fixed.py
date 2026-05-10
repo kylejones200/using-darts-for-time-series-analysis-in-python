@@ -89,7 +89,7 @@ def maybe_load_tbats_csv():
     return df
 
 
-def main():
+def main(plot: bool = False):
     cfg = Config()
     ts = load_series(cfg)
 
@@ -125,77 +125,78 @@ def main():
     y_hist = s.loc[start_2024:end_2024]
     y_act = s.loc[jan_2025:aug_2025]
 
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(y_hist.index, y_hist.values, color="#888888", lw=1.5)
-    ax.axvline(jan_2025, color="#666666", linestyle="--", lw=1)
-    if len(y_act):
-        ax.plot(y_act.index, y_act.values, color="#444444", lw=1.8)
+    if plot:
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.plot(y_hist.index, y_hist.values, color="#888888", lw=1.5)
+        ax.axvline(jan_2025, color="#666666", linestyle="--", lw=1)
+        if len(y_act):
+            ax.plot(y_act.index, y_act.values, color="#444444", lw=1.8)
 
     # Collect forecasts restricted to Jan–Aug 2025
-    end_labels = []
-    for name, (yt, yp) in preds.items():
-        f_idx = yp.time_index
-        mask = (f_idx >= jan_2025) & (f_idx <= aug_2025)
-        if mask.any():
-            f = pd.Series(yp.values().ravel()[mask], index=f_idx[mask])
-            ax.plot(f.index, f.values, color="#000000", lw=2.0, alpha=0.85)
-            end_labels.append((f.index[-1], f.values[-1], name))
+        end_labels = []
+        for name, (yt, yp) in preds.items():
+            f_idx = yp.time_index
+            mask = (f_idx >= jan_2025) & (f_idx <= aug_2025)
+            if mask.any():
+                f = pd.Series(yp.values().ravel()[mask], index=f_idx[mask])
+                ax.plot(f.index, f.values, color="#000000", lw=2.0, alpha=0.85)
+                end_labels.append((f.index[-1], f.values[-1], name))
 
-    if tbats_df is not None and not tbats_df.empty:
-        f_tb = tbats_df[(tbats_df["date"] >= jan_2025) & (tbats_df["date"] <= aug_2025)]
-        if not f_tb.empty:
-            ax.plot(f_tb["date"], f_tb["pred"], color="#000000", lw=1.6, alpha=0.6)
-            end_labels.append((f_tb["date"].iloc[-1], f_tb["pred"].iloc[-1], "TBATS"))
+        if tbats_df is not None and not tbats_df.empty:
+            f_tb = tbats_df[(tbats_df["date"] >= jan_2025) & (tbats_df["date"] <= aug_2025)]
+            if not f_tb.empty:
+                ax.plot(f_tb["date"], f_tb["pred"], color="#000000", lw=1.6, alpha=0.6)
+                end_labels.append((f_tb["date"].iloc[-1], f_tb["pred"].iloc[-1], "TBATS"))
 
     # Minimal y-axis
-    from matplotlib.ticker import MaxNLocator, StrMethodFormatter
+        from matplotlib.ticker import MaxNLocator, StrMethodFormatter
 
-    ax.yaxis.set_major_locator(MaxNLocator(4))
-    ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.grid(False)
-    ax.set_xlabel("")
+        ax.yaxis.set_major_locator(MaxNLocator(4))
+        ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.grid(False)
+        ax.set_xlabel("")
 
     # End-of-line labels
-    if len(y_hist):
-        ax.annotate(
-            "History (2024)",
-            xy=(y_hist.index[-1], y_hist.values[-1]),
-            xytext=(6, 0),
-            textcoords="offset points",
-            fontsize=9,
-            va="center",
-            ha="left",
-            color="#666666",
-        )
-    if len(y_act):
-        ax.annotate(
-            "Actual (Jan–Aug 2025)",
-            xy=(y_act.index[-1], y_act.values[-1]),
-            xytext=(6, 0),
-            textcoords="offset points",
-            fontsize=9,
-            va="center",
-            ha="left",
-            color="#444444",
-        )
-    for x, yv, name in end_labels:
-        ax.annotate(
-            name,
-            xy=(x, yv),
-            xytext=(6, 0),
-            textcoords="offset points",
-            fontsize=9,
-            va="center",
-            ha="left",
-            color="#000000",
-        )
+        if len(y_hist):
+            ax.annotate(
+                "History (2024)",
+                xy=(y_hist.index[-1], y_hist.values[-1]),
+                xytext=(6, 0),
+                textcoords="offset points",
+                fontsize=9,
+                va="center",
+                ha="left",
+                color="#666666",
+            )
+        if len(y_act):
+            ax.annotate(
+                "Actual (Jan–Aug 2025)",
+                xy=(y_act.index[-1], y_act.values[-1]),
+                xytext=(6, 0),
+                textcoords="offset points",
+                fontsize=9,
+                va="center",
+                ha="left",
+                color="#444444",
+            )
+        for x, yv, name in end_labels:
+            ax.annotate(
+                name,
+                xy=(x, yv),
+                xytext=(6, 0),
+                textcoords="offset points",
+                fontsize=9,
+                va="center",
+                ha="left",
+                color="#000000",
+            )
 
-    ax.set_title(
-        "EIA Net Generation — ARIMA/Theta/TBATS last-fold forecasts Jan–Aug 2025"
-    )
-    save_fig("eia_darts_tbats_last_fold.png")
+        ax.set_title(
+            "EIA Net Generation — ARIMA/Theta/TBATS last-fold forecasts Jan–Aug 2025"
+        )
+        save_fig("eia_darts_tbats_last_fold.png")
 
     # Save ARIMA/Theta last fold predictions for reproducibility
     rows = []

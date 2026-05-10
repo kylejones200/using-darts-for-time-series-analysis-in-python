@@ -40,18 +40,19 @@ def fetch_fred_series(series_id, api_key, start="2000-01-01"):
     return TimeSeries.from_dataframe(df.sort_values("date"), "date", "value")
 
 # Plot forecast vs actual
-def plot_forecast(series, forecast, title, filename):
-    plt.figure(figsize=(12, 6))
-    series.plot(label="Actual")
-    forecast.plot(label="Forecast")
-    plt.title(title)
-    plt.xlabel("Date")
-    plt.ylabel("Spread")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig(filename)
-    plt.show()
+def plot_forecast(series, forecast, title, filename, plot: bool = False):
+    if plot:
+        plt.figure(figsize=(12, 6))
+        series.plot(label="Actual")
+        forecast.plot(label="Forecast")
+        plt.title(title)
+        plt.xlabel("Date")
+        plt.ylabel("Spread")
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        plt.savefig(filename)
+        plt.show()
 
 # Torch kwargs for NBEATS
 def torch_config():

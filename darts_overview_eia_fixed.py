@@ -79,7 +79,7 @@ def rolling_origin_eval(ts: TimeSeries, model_ctor, horizon: int, n_splits: int)
     return np.mean(maes), (last_true, last_pred)
 
 
-def main():
+def main(plot: bool = False):
     cfg = Config()
     ts = load_series(cfg)
 
@@ -103,12 +103,13 @@ def main():
 
     logger.info("\n".join(f"{k}: {v}" for k, v in results.items()))
 
-    plt.figure(figsize=(9, 4))
-    ts.plot(label="history", alpha=0.6)
-    for name, (yt, yp) in preds.items():
-        yp.plot(label=f"{name} last fold")
-    plt.legend()
-    save_fig("eia_darts_overview_last_fold.png")
+    if plot:
+        plt.figure(figsize=(9, 4))
+        ts.plot(label="history", alpha=0.6)
+        for name, (yt, yp) in preds.items():
+            yp.plot(label=f"{name} last fold")
+        plt.legend()
+        save_fig("eia_darts_overview_last_fold.png")
 
 
 if __name__ == "__main__":
