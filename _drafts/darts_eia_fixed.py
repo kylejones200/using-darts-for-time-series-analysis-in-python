@@ -1,3 +1,4 @@
+import signalplot
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -15,20 +16,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 np.random.seed(42)
-plt.rcParams.update(
-    {
-        "font.family": "serif",
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "axes.linewidth": 0.8,
-    }
-)
+signalplot.apply(font_family='serif')
 
 
-def save_fig(path: str):
-    plt.tight_layout()
-    plt.savefig(path, bbox_inches="tight")
-    plt.close()
 
 
 @dataclass
@@ -196,7 +186,7 @@ def main(plot: bool = False):
         ax.set_title(
             "EIA Net Generation — ARIMA/Theta/TBATS last-fold forecasts Jan–Aug 2025"
         )
-        save_fig("eia_darts_tbats_last_fold.png")
+        signalplot.save("eia_darts_tbats_last_fold.png")
 
     # Save ARIMA/Theta last fold predictions for reproducibility
     rows = []
