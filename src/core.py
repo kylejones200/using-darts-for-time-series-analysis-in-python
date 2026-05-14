@@ -1,6 +1,5 @@
 """Core functions for time series forecasting with Darts."""
 
-import warnings
 import logging
 import pandas as pd
 import numpy as np
@@ -19,8 +18,7 @@ import matplotlib.pyplot as plt
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
-warnings.filterwarnings("ignore")
-logging.disable(logging.CRITICAL)
+logging.getLogger("py.warnings").setLevel(logging.ERROR)
 
 def fetch_fred_series(series_id: str, api_key: str, start: str = "2000-01-01") -> TimeSeries:
     """Fetch time series data from FRED API."""

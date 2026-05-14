@@ -66,11 +66,9 @@ else:
 
 # # Darts for Time Series Analysis in Python
 
-import warnings
-warnings.filterwarnings("ignore")
 import logging
 
-logging.disable(logging.CRITICAL)
+logging.getLogger("py.warnings").setLevel(logging.ERROR)
 
 
 from darts.dataprocessing import Pipeline
@@ -320,8 +318,7 @@ from darts.metrics import r2_score
 from darts.models import NBEATSModel
 from darts.utils.callbacks import TFMProgressBar
 
-warnings.filterwarnings("ignore")
-logging.disable(logging.CRITICAL)
+logging.getLogger("py.warnings").setLevel(logging.ERROR)
 
 
 def fetch_fred_data(series_id, api_key, start_date='2000-01-01', save_csv=False):
@@ -459,8 +456,7 @@ works
 from darts.metrics import mae, r2_score
 from darts.models import NBEATSModel, FFT
 
-warnings.filterwarnings("ignore")
-logging.disable(logging.CRITICAL)
+logging.getLogger("py.warnings").setLevel(logging.ERROR)
 
 
 def fetch_fred_data(series_id, api_key, start_date='2000-01-01', save_csv=False):
