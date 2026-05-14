@@ -72,8 +72,6 @@ import logging
 
 logging.disable(logging.CRITICAL)
 
-import matplotlib.pyplot as plt
-import pandas as pd
 
 from darts.dataprocessing import Pipeline
 from darts.dataprocessing.transformers import (
@@ -83,11 +81,8 @@ from darts.dataprocessing.transformers import (
     Scaler,
 )
 from darts.metrics import mape
-from darts.models import ExponentialSmoothing
 from darts.utils.timeseries_generation import linear_timeseries
 
-import matplotlib.pyplot as plt
-from darts.models import ExponentialSmoothing
 
 # Fit the model and predict the next 10 steps
 model = ExponentialSmoothing()
@@ -112,15 +107,9 @@ plt.show()
 Stuck forecast
 """
 
-import requests
-import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime
-from darts import TimeSeries
 from darts.models import ARIMA
 
 # FRED API request (as before)
-import os
 api_key = os.getenv('FRED_API_KEY')
 if not api_key:
     raise ValueError("FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key")
@@ -172,12 +161,7 @@ else:
     logging.error(f": {response.status_code}")
     logging.info(response.text)
 
-import requests
-import pandas as pd
-from datetime import datetime
-from darts import TimeSeries
 
-import os
 api_key = os.getenv('FRED_API_KEY')
 if not api_key:
     raise ValueError("FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key")
@@ -214,10 +198,7 @@ else:
 ARIMA
 """
 
-import matplotlib.pyplot as plt
 
-from darts import TimeSeries
-from darts.models import ARIMA
 
 # Fit the ARIMA model and predict the next 30 steps with 1000 samples
 model = ARIMA(p=1, d=1, q=1)  # Adjust these parameters as needed
@@ -238,7 +219,6 @@ plt.tight_layout()
 plt.savefig("ARIMA_Forecast.png")
 plt.show()
 
-from darts.models import ExponentialSmoothing
 
 # Fit the model and predict the next 365 steps
 model = ExponentialSmoothing()
@@ -259,12 +239,6 @@ plt.savefig("ExponentialSmoothing.png")
 plt.tight_layout()
 plt.show()
 
-import requests
-import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime
-from darts import TimeSeries
-from darts.models import ARIMA
 
 def fetch_fred_data(series_id, api_key, start_date='2000-01-01'):
     """Fetch data from FRED API."""
@@ -314,7 +288,6 @@ def visualize_forecast(series, forecast, title, filename, plot: bool = False):
 
 # Main execution
 if __name__ == "__main__":
-    import os
     api_key = os.getenv('FRED_API_KEY')
     if not api_key:
         raise ValueError("FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key")
@@ -341,25 +314,15 @@ if __name__ == "__main__":
     except Exception as e:
         logging.info(f"An error occurred: {str(e)}")
 
-import warnings
-import requests
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from datetime import datetime
-from darts import TimeSeries
 from darts.dataprocessing.transformers import MissingValuesFiller, Scaler
 from darts.metrics import r2_score
 from darts.models import NBEATSModel
 from darts.utils.callbacks import TFMProgressBar
 
 warnings.filterwarnings("ignore")
-import logging
 logging.disable(logging.CRITICAL)
 
-import requests
-import pandas as pd
-from datetime import datetime
 
 def fetch_fred_data(series_id, api_key, start_date='2000-01-01', save_csv=False):
     """
@@ -430,7 +393,6 @@ def display_forecast(pred_series, ts_transformed, forecast_type, start_date=None
         plt.show()
 
 if __name__ == "__main__":
-    import os
     api_key = os.getenv('FRED_API_KEY')
     if not api_key:
         raise ValueError("FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key")
@@ -494,25 +456,12 @@ if __name__ == "__main__":
 works
 """
 
-import warnings
-import requests
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from datetime import datetime
-from darts import TimeSeries
-from darts.dataprocessing.transformers import MissingValuesFiller, Scaler
 from darts.metrics import mae, r2_score
 from darts.models import NBEATSModel, FFT
-from darts.utils.callbacks import TFMProgressBar
 
 warnings.filterwarnings("ignore")
-import logging
 logging.disable(logging.CRITICAL)
 
-import requests
-import pandas as pd
-from datetime import datetime
 
 def fetch_fred_data(series_id, api_key, start_date='2000-01-01', save_csv=False):
     """
@@ -582,7 +531,6 @@ def plot_forecast(train, val, pred, title, plot: bool = False):
     logging.info(f"MAE: {mae(pred, val):.4f}")
 
 if __name__ == "__main__":
-    import os
     api_key = os.getenv('FRED_API_KEY')
     if not api_key:
         raise ValueError("FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key")
@@ -662,8 +610,6 @@ if __name__ == "__main__":
 
     logging.info("Forecasting completed and visualizations saved.")
 
-import pandas as pd
-from darts import TimeSeries
 
 # Create a Pandas DataFrame
 date_range = pd.date_range(start="2023-01-01", periods=50, freq="D")
@@ -676,7 +622,6 @@ series.head()
 """Simple Forecasting with Darts
 Darts supports traditional methods like Exponential Smoothing and ARIMA for quick, interpretable forecasts.
 Exponential Smoothing"""
-from darts.models import ExponentialSmoothing
 
 # Fit the model and predict the next 10 steps
 model = ExponentialSmoothing()
@@ -687,7 +632,6 @@ forecast = model.predict(10)
 series.plot(label="Actual")
 forecast.plot(label="Forecast")
 """ARIMA"""
-from darts.models import ARIMA
 
 # Fit the ARIMA model
 model = ARIMA(1, 1, 1)
