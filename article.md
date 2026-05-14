@@ -25,7 +25,7 @@ Economists and investors use this as an indicator of market expectations about f
 FRED provides this data by API which is easy to use with pandas_datareader.
 
 
-Darts supports traditional methods like **Exponential Smoothing** and **ARIMA** for quick, interpretable forecasts.
+Darts supports traditional methods like Exponential Smoothing and ARIMA for quick, interpretable forecasts.
 
 #### Exponential Smoothing
 
@@ -39,11 +39,11 @@ The autoARIMA implementations in other tools like statsmodels are easier to use 
 In this viz, I zoomed so it is much easier to see the prediction --- which is basically a straight line for the next 30 days.
 
 ### Machine Learning Models in Darts
-But that is just the start. Darts can also do more advanced forecasting with machine learning models like **Random Forests** and **LightGBM**.
+But that is just the start. Darts can also do more advanced forecasting with machine learning models like Random Forests and LightGBM.
 
 I have another article that goes deeper into N-BEATS.
 
-[**N-BEATS for Time Series Forecasting in Python**\ *N-BEATS (Neural Basis Expansion Analysis for Time Series) is a deep learning model specifically designed for time...*medium.com](https://medium.com/@kylejones_47003/n-beats-for-time-series-forecasting-in-python-b4a61858fe49 "https://medium.com/@kylejones_47003/n-beats-for-time-series-forecasting-in-python-b4a61858fe49")[](https://medium.com/@kylejones_47003/n-beats-for-time-series-forecasting-in-python-b4a61858fe49)
+[N-BEATS for Time Series Forecasting in Python\ *N-BEATS (Neural Basis Expansion Analysis for Time Series) is a deep learning model specifically designed for time...*medium.com](https://medium.com/@kylejones_47003/n-beats-for-time-series-forecasting-in-python-b4a61858fe49 "https://medium.com/@kylejones_47003/n-beats-for-time-series-forecasting-in-python-b4a61858fe49")[](https://medium.com/@kylejones_47003/n-beats-for-time-series-forecasting-in-python-b4a61858fe49)
 
 
 ### Evaluating Models
@@ -60,7 +60,7 @@ The exponential smoothing works better than ARIMA on this dataset.
 
 
 ### But wait, there's more!
-**Darts has tools for Backtesting to** Evaluate how well a model performs over historical data. It can do **Transformations like** Scale, log-transform, or normalize data before modeling. And it can do ensembling to combine multiple models for better forecasts.
+Darts has tools for Backtesting to Evaluate how well a model performs over historical data. It can do Transformations like Scale, log-transform, or normalize data before modeling. And it can do ensembling to combine multiple models for better forecasts.
 
 
 ### Deployment with Darts

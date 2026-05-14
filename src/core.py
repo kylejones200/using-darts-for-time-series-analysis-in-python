@@ -47,8 +47,7 @@ def load_data(data_path: Path = None, series_id: str = None, api_key: str = None
         return TimeSeries.from_dataframe(df, value_cols=['value'])
     elif series_id and api_key:
         return fetch_fred_series(series_id, api_key)
-    else:
-        raise ValueError("Either data_path or (series_id and api_key) must be provided")
+    raise ValueError("Either data_path or (series_id and api_key) must be provided")
 
 def prepare_data(series: TimeSeries, split_date: str = "2020-01-01") -> Tuple[TimeSeries, TimeSeries, Scaler]:
     """Prepare data: fill missing values, split, and scale."""

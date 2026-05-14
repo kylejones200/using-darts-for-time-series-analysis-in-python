@@ -287,8 +287,7 @@ def fetch_fred_data(series_id, api_key, start_date='2000-01-01'):
         df['value'] = df['value'].ffill()  # Handle missing values
         df = df.sort_values('date')
         return TimeSeries.from_dataframe(df, 'date', 'value')
-    else:
-        raise Exception(f"API request failed with status code {response.status_code}")
+    raise Exception(f"API request failed with status code {response.status_code}")
 
 def build_and_forecast(series, forecast_horizon=30, num_samples=1000):
     """Build ARIMA model and generate forecast."""
@@ -404,8 +403,7 @@ def fetch_fred_data(series_id, api_key, start_date='2000-01-01', save_csv=False)
             logging.info(f"Data saved to {csv_filename}")
         
         return df
-    else:
-        raise Exception(f"API request failed with status code {response.status_code}")
+    raise Exception(f"API request failed with status code {response.status_code}")
 
 def generate_torch_kwargs():
     return {
@@ -557,8 +555,7 @@ def fetch_fred_data(series_id, api_key, start_date='2000-01-01', save_csv=False)
             logging.info(f"Data saved to {csv_filename}")
         
         return df
-    else:
-        raise Exception(f"API request failed with status code {response.status_code}")
+    raise Exception(f"API request failed with status code {response.status_code}")
 
 def generate_torch_kwargs():
     return {
