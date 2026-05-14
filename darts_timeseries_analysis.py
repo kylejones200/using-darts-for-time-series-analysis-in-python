@@ -30,13 +30,13 @@ params = {
 url = "https://api.stlouisfed.org/fred/series/observations"
 response = requests.get(url, params=params)
 
-if response.status_code == 200:
-    data = response.json()
-    observations = data['observations']
-    df = pd.DataFrame(observations)
-    df['date'] = pd.to_datetime(df['date'])
-    df['value'] = pd.to_numeric(df['value'], errors='coerce')
-    df = df.sort_values('date')
+response.raise_for_status()
+data = response.json()
+observations = data['observations']
+df = pd.DataFrame(observations)
+df['date'] = pd.to_datetime(df['date'])
+df['value'] = pd.to_numeric(df['value'], errors='coerce')
+df = df.sort_values('date')
     
     # Create a Darts TimeSeries
     series = TimeSeries.from_dataframe(df, 'date', 'value')
@@ -134,12 +134,12 @@ params = {
 url = "https://api.stlouisfed.org/fred/series/observations"
 response = requests.get(url, params=params)
 
-if response.status_code == 200:
-    data = response.json()
-    observations = data['observations']
-    df = pd.DataFrame(observations)
-    df['date'] = pd.to_datetime(df['date'])
-    df['value'] = pd.to_numeric(df['value'], errors='coerce')
+response.raise_for_status()
+data = response.json()
+observations = data['observations']
+df = pd.DataFrame(observations)
+df['date'] = pd.to_datetime(df['date'])
+df['value'] = pd.to_numeric(df['value'], errors='coerce')
     
     # Handle missing values by forward filling
     df['value'] = df['value'].ffill()
@@ -191,12 +191,12 @@ params = {
 url = "https://api.stlouisfed.org/fred/series/observations"
 response = requests.get(url, params=params)
 
-if response.status_code == 200:
-    data = response.json()
-    observations = data['observations']
-    df = pd.DataFrame(observations)
-    df['date'] = pd.to_datetime(df['date'])
-    df['value'] = pd.to_numeric(df['value'], errors='coerce')
+response.raise_for_status()
+data = response.json()
+observations = data['observations']
+df = pd.DataFrame(observations)
+df['date'] = pd.to_datetime(df['date'])
+df['value'] = pd.to_numeric(df['value'], errors='coerce')
     
     # Handle missing values by forward filling
     df['value'] = df['value'].ffill()
@@ -278,15 +278,15 @@ def fetch_fred_data(series_id, api_key, start_date='2000-01-01'):
     url = "https://api.stlouisfed.org/fred/series/observations"
     response = requests.get(url, params=params)
     
-    if response.status_code == 200:
-        data = response.json()
-        observations = data['observations']
-        df = pd.DataFrame(observations)
-        df['date'] = pd.to_datetime(df['date'])
-        df['value'] = pd.to_numeric(df['value'], errors='coerce')
-        df['value'] = df['value'].ffill()  # Handle missing values
-        df = df.sort_values('date')
-        return TimeSeries.from_dataframe(df, 'date', 'value')
+    response.raise_for_status()
+    data = response.json()
+    observations = data['observations']
+    df = pd.DataFrame(observations)
+    df['date'] = pd.to_datetime(df['date'])
+    df['value'] = pd.to_numeric(df['value'], errors='coerce')
+    df['value'] = df['value'].ffill()  # Handle missing values
+    df = df.sort_values('date')
+    return TimeSeries.from_dataframe(df, 'date', 'value')
     raise Exception(f"API request failed with status code {response.status_code}")
 
 def build_and_forecast(series, forecast_horizon=30, num_samples=1000):
@@ -384,12 +384,12 @@ def fetch_fred_data(series_id, api_key, start_date='2000-01-01', save_csv=False)
     url = "https://api.stlouisfed.org/fred/series/observations"
     response = requests.get(url, params=params)
     
-    if response.status_code == 200:
-        data = response.json()
-        observations = data['observations']
-        df = pd.DataFrame(observations)
-        df['date'] = pd.to_datetime(df['date'])
-        df['value'] = pd.to_numeric(df['value'], errors='coerce')
+    response.raise_for_status()
+    data = response.json()
+    observations = data['observations']
+    df = pd.DataFrame(observations)
+    df['date'] = pd.to_datetime(df['date'])
+    df['value'] = pd.to_numeric(df['value'], errors='coerce')
         
         # Drop rows with NaN values
         df = df.dropna()
@@ -537,12 +537,12 @@ def fetch_fred_data(series_id, api_key, start_date='2000-01-01', save_csv=False)
     url = "https://api.stlouisfed.org/fred/series/observations"
     response = requests.get(url, params=params)
     
-    if response.status_code == 200:
-        data = response.json()
-        observations = data['observations']
-        df = pd.DataFrame(observations)
-        df['date'] = pd.to_datetime(df['date'])
-        df['value'] = pd.to_numeric(df['value'], errors='coerce')
+    response.raise_for_status()
+    data = response.json()
+    observations = data['observations']
+    df = pd.DataFrame(observations)
+    df['date'] = pd.to_datetime(df['date'])
+    df['value'] = pd.to_numeric(df['value'], errors='coerce')
         
         # Drop rows with NaN values
         df = df.dropna()
