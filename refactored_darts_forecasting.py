@@ -2,20 +2,29 @@
 
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 import logging
+
 logging.getLogger("py.warnings").setLevel(logging.ERROR)
 
-import pandas as pd
-import matplotlib.pyplot as plt
 from datetime import datetime
-import requests
 
+import matplotlib.pyplot as plt
+import pandas as pd
+import requests
 from darts import TimeSeries
-from darts.models import ARIMA, ExponentialSmoothing, LightGBMModel, RNNModel, FFT, NBEATSModel
 from darts.dataprocessing.transformers import MissingValuesFiller, Scaler
+from darts.models import (
+    ARIMA,
+    FFT,
+    ExponentialSmoothing,
+    LightGBMModel,
+    NBEATSModel,
+    RNNModel,
+)
 from darts.utils.callbacks import TFMProgressBar
+
 
 # Fetch and clean data from FRED
 def fetch_fred_series(series_id, api_key, start="2000-01-01"):
@@ -24,7 +33,7 @@ def fetch_fred_series(series_id, api_key, start="2000-01-01"):
         "api_key": api_key,
         "file_type": "json",
         "observation_start": start,
-        "observation_end": datetime.now().strftime('%Y-%m-%d'),
+        "observation_end": datetime.now().strftime("%Y-%m-%d"),
     }
     url = "https://api.stlouisfed.org/fred/series/observations"
     r = requests.get(url, params=params)
@@ -34,6 +43,7 @@ def fetch_fred_series(series_id, api_key, start="2000-01-01"):
     df["date"] = pd.to_datetime(df["date"])
     df["value"] = pd.to_numeric(df["value"], errors="coerce").ffill()
     return TimeSeries.from_dataframe(df.sort_values("date"), "date", "value")
+
 
 # Plot forecast vs actual
 def plot_forecast(series, forecast, title, filename, plot: bool = False):
@@ -50,6 +60,7 @@ def plot_forecast(series, forecast, title, filename, plot: bool = False):
         plt.savefig(filename)
         plt.show()
 
+
 # Torch kwargs for NBEATS
 def torch_config():
     return {
@@ -59,11 +70,15 @@ def torch_config():
         }
     }
 
+
 if __name__ == "__main__":
     import os
-    api_key = os.getenv('FRED_API_KEY')
+
+    api_key = os.getenv("FRED_API_KEY")
     if not api_key:
-        raise ValueError("FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key")
+        raise ValueError(
+            "FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key"
+        )
     series_id = "T10Y2Y"
 
     # Get data
@@ -102,14 +117,22 @@ if __name__ == "__main__":
     plot_forecast(actual, forecast, "LightGBM Forecast", "LightGBM.png")
 
     # LSTM
-    model = RNNModel(model="LSTM", input_chunk_length=30, output_chunk_length=7, n_epochs=50)
+    model = RNNModel(
+        model="LSTM", input_chunk_length=30, output_chunk_length=7, n_epochs=50
+    )
     model.fit(train_scaled)
     forecast = model.predict(len(val_scaled))
     forecast = scaler.inverse_transform(forecast)
     plot_forecast(actual, forecast, "LSTM Forecast", "LSTM.png")
 
     # NBEATS
-    model = NBEATSModel(input_chunk_length=30, output_chunk_length=7, n_epochs=50, random_state=42, **torch_config())
+    model = NBEATSModel(
+        input_chunk_length=30,
+        output_chunk_length=7,
+        n_epochs=50,
+        random_state=42,
+        **torch_config(),
+    )
     model.fit(train_scaled, val_series=val_scaled)
     forecast = model.predict(len(val_scaled))
     forecast = scaler.inverse_transform(forecast)

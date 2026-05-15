@@ -1,18 +1,20 @@
-# Description: Short example for Using Darts for Time Series Analysis in Python.
+"""Generated from Jupyter notebook: DARTS with Ercot data
+
+Magics and shell lines are commented out. Run with a normal Python interpreter."""
 
 
-# Load the ERCOT data
+# --- code cell ---
 
 import matplotlib.pyplot as plt
 import pandas as pd
 from darts import TimeSeries
 from darts.metrics import mape
-from darts.models import ARIMA, ExponentialSmoothing
-from data_io import read_csv
+from darts.models import ExponentialSmoothing
 
 
 def main():
-    df = read_csv("ercot_load_data.csv")
+    # Load the ERCOT data
+    df = pd.read_csv("ercot_load_data.csv")
     df["date"] = pd.to_datetime(df["date"])  # Ensure 'date' is in datetime format
     df["values"] = pd.to_numeric(
         df["values"], errors="coerce"
@@ -46,7 +48,7 @@ def main():
     forecast = model.predict(len(series_hold_out))
 
     # Calculate MAPE
-    mape = mape(series_hold_out, forecast)
+    mape_result = mape(series_hold_out, forecast)
 
     # Plot the results
     plt.figure(figsize=(12, 6))
@@ -60,14 +62,51 @@ def main():
     # Plot forecasted data
     forecast.plot(label="Forecast", color="red")
 
-    plt.title(f"ERCOT Hourly Load Forecast with Hold-Out Data \n MAPE: {mape:.2f}%")
+    plt.title(f"ERCOT Hourly Load Forecast with Hold-Out Data \n MAPE: {mape_result:.2f}%")
     plt.xlabel("Date")
     plt.ylabel("Load Values")
     plt.legend()
+    plt.grid(False)
     plt.tight_layout()
     plt.savefig("ERCOT_Hourly_HoldOut_Forecast.png")
     plt.show()
 
+
+    # --- code cell ---
+
+    """
+    ARIMA
+    """
+    import matplotlib.pyplot as plt
+    from darts import TimeSeries
+    from darts.models import ARIMA
+
+    # Fit the ARIMA model and predict the next 30 steps with 1000 samples
+    model = ARIMA(p=1, d=1, q=1)  # Adjust these parameters as needed
+    model.fit(series)
+    forecast = model.predict(n=30, num_samples=1000)
+
+    # Plot the results with uncertainty
+    plt.figure(figsize=(12, 6))
+    series[-365:].plot(label="Actual", color="blue")
+    forecast.plot(label="Forecast", color="red")
+
+    plt.title("10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity")
+    plt.xlabel("Date")
+    plt.ylabel("Spread")
+    plt.legend()
+    plt.grid(False)
+    plt.tight_layout()
+    plt.savefig("ARIMA_Forecast.png")
+    plt.show()
+
+
+    # --- code cell ---
+
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    from darts import TimeSeries
+    from darts.models import ARIMA
 
     # Define hold-out period
     hold_out_hours = 24  # Example: 24 hours = 1 day
@@ -84,20 +123,26 @@ def main():
     model = ARIMA(p=1, d=1, q=1)  # You can adjust p, d, q parameters
     model.fit(series_train)
 
-
+    # Forecast the hold-out period
     forecast = model.predict(len(series_hold_out))
+    # Calculate MAPE
     mape_result = mape(series_hold_out, forecast)
 
+    # Plot the results
     plt.figure(figsize=(12, 6))
+
+
     series_train.plot(label="Training Data", color="blue")
     series_hold_out.plot(label="Hold-Out Data (Actual)", color="green")
     forecast.plot(label="Forecast", color="red")
+
     plt.title(
         f"ERCOT Hourly Load Forecast with ARIMA and Hold-Out Period \n MAPE: {mape_result:.2f}%"
     )
     plt.xlabel("Date")
     plt.ylabel("Load Values")
     plt.legend()
+    plt.grid(False)
     plt.tight_layout()
     plt.savefig("ARIMA_Hourly_HoldOut_Forecast.png")
     plt.show()

@@ -1,31 +1,27 @@
-import signalplot
+import logging
+from dataclasses import dataclass
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from pathlib import Path
-from dataclasses import dataclass
-from sklearn.model_selection import TimeSeriesSplit
-from sklearn.metrics import mean_absolute_error
+import signalplot
 from darts import TimeSeries
 from darts.models import ARIMA, Theta
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import TimeSeriesSplit
 
-import logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 np.random.seed(42)
-signalplot.apply(font_family='serif')
-
-
+signalplot.apply(font_family="serif")
 
 
 @dataclass
 class Config:
-    csv_path: str = (
-        "/Users/k.jones/Downloads/medium-export-e6bf40a8b01915d7380f6f547e0dd25ddd791328d4d9fa3a77513e82e662373c/posts/2001-2025 Net_generation_United_States_all_sectors_monthly.csv"
-    )
+    csv_path: str = "/Users/k.jones/Downloads/medium-export-e6bf40a8b01915d7380f6f547e0dd25ddd791328d4d9fa3a77513e82e662373c/posts/2001-2025 Net_generation_United_States_all_sectors_monthly.csv"
     freq: str = "MS"
     horizon: int = 12
     n_splits: int = 5
@@ -122,7 +118,7 @@ def main(plot: bool = False):
         if len(y_act):
             ax.plot(y_act.index, y_act.values, color="#444444", lw=1.8)
 
-    # Collect forecasts restricted to Jan–Aug 2025
+        # Collect forecasts restricted to Jan–Aug 2025
         end_labels = []
         for name, (yt, yp) in preds.items():
             f_idx = yp.time_index
@@ -133,12 +129,16 @@ def main(plot: bool = False):
                 end_labels.append((f.index[-1], f.values[-1], name))
 
         if tbats_df is not None and not tbats_df.empty:
-            f_tb = tbats_df[(tbats_df["date"] >= jan_2025) & (tbats_df["date"] <= aug_2025)]
+            f_tb = tbats_df[
+                (tbats_df["date"] >= jan_2025) & (tbats_df["date"] <= aug_2025)
+            ]
             if not f_tb.empty:
                 ax.plot(f_tb["date"], f_tb["pred"], color="#000000", lw=1.6, alpha=0.6)
-                end_labels.append((f_tb["date"].iloc[-1], f_tb["pred"].iloc[-1], "TBATS"))
+                end_labels.append(
+                    (f_tb["date"].iloc[-1], f_tb["pred"].iloc[-1], "TBATS")
+                )
 
-    # Minimal y-axis
+        # Minimal y-axis
         from matplotlib.ticker import MaxNLocator, StrMethodFormatter
 
         ax.yaxis.set_major_locator(MaxNLocator(4))
@@ -148,7 +148,7 @@ def main(plot: bool = False):
         ax.grid(False)
         ax.set_xlabel("")
 
-    # End-of-line labels
+        # End-of-line labels
         if len(y_hist):
             ax.annotate(
                 "History (2024)",
