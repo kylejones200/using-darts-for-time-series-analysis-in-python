@@ -125,7 +125,7 @@ def evaluate_forecast(actual: TimeSeries, forecast: TimeSeries) -> Dict[str, flo
 def plot_forecast(series: TimeSeries, forecast: TimeSeries, title: str, output_path: Path,
                  metrics: Dict[str, float] = None):
     """Plot forecast vs actual """
-                 if plot:
+    if plot:
         fig, ax = plt.subplots(figsize=(12, 6))
     
         series.plot(ax=ax, label="Actual", color="#4A90A4", linewidth=1.2)

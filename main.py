@@ -70,59 +70,59 @@ def main():
     
     if models_config['arima']['enabled']:
                 model = fit_arima(train, tuple(models_config['arima']['order']))
-        forecast = forecast_model(model, len(val), scaler)
-        metrics = evaluate_forecast(val, forecast)
-        logging.info(f"ARIMA - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
-        plot_forecast(series, forecast, "ARIMA Forecast", output_dir / 'arima_forecast.png', metrics)
+forecast = forecast_model(model, len(val), scaler)
+metrics = evaluate_forecast(val, forecast)
+logging.info(f"ARIMA - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
+plot_forecast(series, forecast, "ARIMA Forecast", output_dir / 'arima_forecast.png', metrics)
     
-    if models_config['exponential_smoothing']['enabled']:
+if models_config['exponential_smoothing']['enabled']:
                 model = fit_exponential_smoothing(train)
-        forecast = forecast_model(model, len(val), scaler)
-        metrics = evaluate_forecast(val, forecast)
-        logging.info(f"Exponential Smoothing - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
-        plot_forecast(series, forecast, "Exponential Smoothing Forecast",
+forecast = forecast_model(model, len(val), scaler)
+metrics = evaluate_forecast(val, forecast)
+logging.info(f"Exponential Smoothing - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
+plot_forecast(series, forecast, "Exponential Smoothing Forecast",
                     output_dir / 'exponential_smoothing_forecast.png', metrics)
     
-    if models_config['lightgbm']['enabled']:
+if models_config['lightgbm']['enabled']:
                 model = fit_lightgbm(train, models_config['lightgbm']['lags'])
-        forecast = forecast_model(model, len(val), scaler)
-        metrics = evaluate_forecast(val, forecast)
-        logging.info(f"LightGBM - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
-        plot_forecast(series, forecast, "LightGBM Forecast",
+forecast = forecast_model(model, len(val), scaler)
+metrics = evaluate_forecast(val, forecast)
+logging.info(f"LightGBM - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
+plot_forecast(series, forecast, "LightGBM Forecast",
                     output_dir / 'lightgbm_forecast.png', metrics)
     
-    if models_config['lstm']['enabled']:
+if models_config['lstm']['enabled']:
                 model = fit_lstm(train, val, 
                         models_config['lstm']['input_chunk_length'],
                         models_config['lstm']['output_chunk_length'],
                         models_config['lstm']['n_epochs'])
-        forecast = forecast_model(model, len(val), scaler)
-        metrics = evaluate_forecast(val, forecast)
-        logging.info(f"LSTM - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
-        plot_forecast(series, forecast, "LSTM Forecast",
+forecast = forecast_model(model, len(val), scaler)
+metrics = evaluate_forecast(val, forecast)
+logging.info(f"LSTM - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
+plot_forecast(series, forecast, "LSTM Forecast",
                     output_dir / 'lstm_forecast.png', metrics)
     
-    if models_config['nbeats']['enabled']:
+if models_config['nbeats']['enabled']:
                 model = fit_nbeats(train, val,
                           models_config['nbeats']['input_chunk_length'],
                           models_config['nbeats']['output_chunk_length'],
                           models_config['nbeats']['n_epochs'],
                           models_config['nbeats']['random_state'])
-        forecast = forecast_model(model, len(val), scaler)
-        metrics = evaluate_forecast(val, forecast)
-        logging.info(f"NBEATS - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
-        plot_forecast(series, forecast, "NBEATS Forecast",
+forecast = forecast_model(model, len(val), scaler)
+metrics = evaluate_forecast(val, forecast)
+logging.info(f"NBEATS - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
+plot_forecast(series, forecast, "NBEATS Forecast",
                     output_dir / 'nbeats_forecast.png', metrics)
     
-    if models_config['fft']['enabled']:
+if models_config['fft']['enabled']:
                 model = fit_fft(train)
-        forecast = forecast_model(model, len(val), scaler)
-        metrics = evaluate_forecast(val, forecast)
-        logging.info(f"FFT - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
-        plot_forecast(series, forecast, "FFT Forecast",
+forecast = forecast_model(model, len(val), scaler)
+metrics = evaluate_forecast(val, forecast)
+logging.info(f"FFT - MAE: {metrics['mae']:.2f}, MAPE: {metrics['mape']:.2%}")
+plot_forecast(series, forecast, "FFT Forecast",
                     output_dir / 'fft_forecast.png', metrics)
     
-    logging.info(f"\nForecasting complete. Figures saved to {output_dir}")
+logging.info(f"\nForecasting complete. Figures saved to {output_dir}")
 
 if __name__ == "__main__":
     main()
