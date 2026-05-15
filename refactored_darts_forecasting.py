@@ -8,7 +8,6 @@ import logging
 logging.getLogger("py.warnings").setLevel(logging.ERROR)
 
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 import requests
@@ -16,7 +15,6 @@ import requests
 from darts import TimeSeries
 from darts.models import ARIMA, ExponentialSmoothing, LightGBMModel, RNNModel, FFT, NBEATSModel
 from darts.dataprocessing.transformers import MissingValuesFiller, Scaler
-from darts.metrics import mae, mape, r2_score
 from darts.utils.callbacks import TFMProgressBar
 
 # Fetch and clean data from FRED
