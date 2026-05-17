@@ -71,9 +71,7 @@ else:
 
 # # Darts for Time Series Analysis in Python
 
-import warnings
 
-warnings.filterwarnings("ignore")
 import logging
 
 logging.disable(logging.CRITICAL)
@@ -363,7 +361,6 @@ if __name__ == "__main__":
     except Exception as e:
         logging.info(f"An error occurred: {str(e)}")
 
-import warnings
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -376,7 +373,6 @@ from darts.metrics import r2_score
 from darts.models import NBEATSModel
 from darts.utils.callbacks import TFMProgressBar
 
-warnings.filterwarnings("ignore")
 import logging
 
 logging.disable(logging.CRITICAL)
@@ -535,7 +531,6 @@ if __name__ == "__main__":
 works
 """
 
-import warnings
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -548,7 +543,6 @@ from darts.metrics import mae, r2_score
 from darts.models import FFT, NBEATSModel
 from darts.utils.callbacks import TFMProgressBar
 
-warnings.filterwarnings("ignore")
 import logging
 
 logging.disable(logging.CRITICAL)
