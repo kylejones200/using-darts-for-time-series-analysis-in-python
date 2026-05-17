@@ -1,39 +1,68 @@
 """Generated from Jupyter notebook: DARTS with Ercot data
 
 Magics and shell lines are commented out. Run with a normal Python interpreter."""
-
-import matplotlib.pyplot as plt
-import pandas as pd
 from darts import TimeSeries
-from darts.metrics import mape
-from darts.models import ExponentialSmoothing
+from darts.models import ARIMA
+import matplotlib.pyplot as plt
 
 
-def main():
+def load_the_ercot_data() -> None:
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    from darts import TimeSeries
+    from darts.metrics import mape
+    from darts.models import ExponentialSmoothing
+
+    # Load the ERCOT data
     df = pd.read_csv("ercot_load_data.csv")
-    df["date"] = pd.to_datetime(df["date"])
-    df["values"] = pd.to_numeric(df["values"], errors="coerce")
-    df = df.sort_values("date")
+    df["date"] = pd.to_datetime(df["date"])  # Ensure 'date' is in datetime format
+    df["values"] = pd.to_numeric(
+        df["values"], errors="coerce"
+    )  # Convert 'values' to numeric
+    df = df.sort_values("date")  # Sort by date
+
+    # Drop rows with missing or NaN values
     df = df.dropna()
-    df = df.set_index("date").resample("h").mean().reset_index()
-    hold_out_hours = 24
+
+    # Resample the data to hourly frequency
+    df = (
+        df.set_index("date").resample("h").mean().reset_index()
+    )  # Resample and take the mean for each hour
+
+    # Define hold-out period
+    hold_out_hours = 24  # 24 hours = 1 day
     train = df.iloc[:-hold_out_hours]
     hold_out = df.iloc[-hold_out_hours:]
+
+    # Create TimeSeries for training and hold-out data
     series_train = TimeSeries.from_dataframe(
         train, "date", "values", freq="h", fill_missing_dates=True
     )
     series_hold_out = TimeSeries.from_dataframe(hold_out, "date", "values", freq="h")
+
+    # Fit the Exponential Smoothing model on training data
     model = ExponentialSmoothing()
     model.fit(series_train)
+
+    # Forecast the hold-out period
     forecast = model.predict(len(series_hold_out))
+
+    # Calculate MAPE
     mape_result = mape(series_hold_out, forecast)
+
+    # Plot the results
     plt.figure(figsize=(12, 6))
+
+    # Plot training data
     series_train.plot(label="Training Data", color="blue")
+
+    # Plot hold-out data
     series_hold_out.plot(label="Hold-Out Data (Actual)", color="green")
+
+    # Plot forecasted data
     forecast.plot(label="Forecast", color="red")
-    plt.title(
-        f"ERCOT Hourly Load Forecast with Hold-Out Data \n MAPE: {mape_result:.2f}%"
-    )
+
+    plt.title(f"ERCOT Hourly Load Forecast with Hold-Out Data \n MAPE: {mape_result:.2f}%")
     plt.xlabel("Date")
     plt.ylabel("Load Values")
     plt.legend()
@@ -41,46 +70,74 @@ def main():
     plt.tight_layout()
     plt.savefig("ERCOT_Hourly_HoldOut_Forecast.png")
     plt.show()
-    "\n    ARIMA\n    "
-    import matplotlib.pyplot as plt
-    from darts import TimeSeries
-    from darts.models import ARIMA
+
+
+def fit_the_arima_model_and_predict_the_next_30_step() -> None:
+    '\nARIMA\n'
 
     model = ARIMA(p=1, d=1, q=1)
+
     model.fit(series)
+
     forecast = model.predict(n=30, num_samples=1000)
+
     plt.figure(figsize=(12, 6))
-    series[-365:].plot(label="Actual", color="blue")
-    forecast.plot(label="Forecast", color="red")
-    plt.title(
-        "10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity"
-    )
-    plt.xlabel("Date")
-    plt.ylabel("Spread")
+
+    series[-365:].plot(label='Actual', color='blue')
+
+    forecast.plot(label='Forecast', color='red')
+
+    plt.title('10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity')
+
+    plt.xlabel('Date')
+
+    plt.ylabel('Spread')
+
     plt.legend()
+
     plt.grid(False)
+
     plt.tight_layout()
-    plt.savefig("ARIMA_Forecast.png")
+
+    plt.savefig('ARIMA_Forecast.png')
+
     plt.show()
+
+
+def define_hold_out_period() -> None:
     import matplotlib.pyplot as plt
+    import pandas as pd
     from darts import TimeSeries
     from darts.models import ARIMA
 
-    hold_out_hours = 24
+    # Define hold-out period
+    hold_out_hours = 24  # Example: 24 hours = 1 day
     train = df.iloc[:-hold_out_hours]
     hold_out = df.iloc[-hold_out_hours:]
+
+    # Create TimeSeries for training and hold-out data
     series_train = TimeSeries.from_dataframe(
         train, "date", "values", freq="h", fill_missing_dates=True
     )
     series_hold_out = TimeSeries.from_dataframe(hold_out, "date", "values", freq="h")
-    model = ARIMA(p=1, d=1, q=1)
+
+    # Fit the ARIMA model
+    model = ARIMA(p=1, d=1, q=1)  # You can adjust p, d, q parameters
     model.fit(series_train)
+
+    # Forecast the hold-out period
     forecast = model.predict(len(series_hold_out))
+    # Calculate MAPE
     mape_result = mape(series_hold_out, forecast)
+
+    # Plot the results
     plt.figure(figsize=(12, 6))
+
+
     series_train.plot(label="Training Data", color="blue")
     series_hold_out.plot(label="Hold-Out Data (Actual)", color="green")
     forecast.plot(label="Forecast", color="red")
+
     plt.title(
         f"ERCOT Hourly Load Forecast with ARIMA and Hold-Out Period \n MAPE: {mape_result:.2f}%"
     )
@@ -94,8 +151,9 @@ def main():
 
 
 def main() -> None:
-    main()
-
+    load_the_ercot_data()
+    fit_the_arima_model_and_predict_the_next_30_step()
+    define_hold_out_period()
 
 if __name__ == "__main__":
     main()
