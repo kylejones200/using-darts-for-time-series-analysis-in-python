@@ -305,21 +305,23 @@ def build_and_forecast(series, forecast_horizon=30, num_samples=1000):
 
 def visualize_forecast(series, forecast, title, filename, plot: bool = False):
     """Visualize the original series and forecast."""
-    if plot:
-        plt.figure(figsize=(12, 6))
-        series[-365:].plot(
-            label="Actual", color="blue"
-        )  # Plot last year of actual data
-        forecast.plot(label="Forecast", color="red")
+    if not plot:
+        return
 
-        plt.title(title)
-        plt.xlabel("Date")
-        plt.ylabel("Spread")
-        plt.legend()
-        plt.grid(True)
-        plt.savefig(filename)
-        plt.tight_layout()
-        plt.show()
+    plt.figure(figsize=(12, 6))
+    series[-365:].plot(
+        label="Actual", color="blue"
+    )  # Plot last year of actual data
+    forecast.plot(label="Forecast", color="red")
+
+    plt.title(title)
+    plt.xlabel("Date")
+    plt.ylabel("Spread")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(filename)
+    plt.tight_layout()
+    plt.show()
 
 # Main execution
 if __name__ == "__main__":
@@ -388,22 +390,24 @@ def generate_torch_kwargs():
 def display_forecast(
     pred_series, ts_transformed, forecast_type, start_date=None, plot: bool = False
 ):
-    if plot:
-        plt.figure(figsize=(12, 6))
-        if start_date:
-            ts_transformed = ts_transformed.drop_before(start_date)
-        ts_transformed.plot(label="Actual")
-        pred_series.plot(label=f"{forecast_type.capitalize()} Forecast")
-        plt.title(
-            f"10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity\nR2: {r2_score(ts_transformed, pred_series):.4f}"
-        )
-        plt.xlabel("Date")
-        plt.ylabel("Spread")
-        plt.legend()
-        plt.grid(False)
-        plt.tight_layout()
-        plt.savefig(f"NBEATS_{forecast_type}_Forecast.png")
-        plt.show()
+    if not plot:
+        return
+
+    plt.figure(figsize=(12, 6))
+    if start_date:
+        ts_transformed = ts_transformed.drop_before(start_date)
+    ts_transformed.plot(label="Actual")
+    pred_series.plot(label=f"{forecast_type.capitalize()} Forecast")
+    plt.title(
+        f"10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity\nR2: {r2_score(ts_transformed, pred_series):.4f}"
+    )
+    plt.xlabel("Date")
+    plt.ylabel("Spread")
+    plt.legend()
+    plt.grid(False)
+    plt.tight_layout()
+    plt.savefig(f"NBEATS_{forecast_type}_Forecast.png")
+    plt.show()
 
 if __name__ == "__main__":
     import os

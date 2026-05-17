@@ -37,3 +37,11 @@ Note: Set `api_key` in config.yaml or use `FRED_API_KEY` environment variable.
 - Deep learning models (LSTM, NBEATS) are disabled by default in config.yaml due to longer training times. Enable them by setting `enabled: true`.
 - FRED API requires a free API key from https://fred.stlouisfed.org/docs/api/api_key.html
 - Data is automatically split before scaling to prevent data leakage.
+
+## Disclaimer
+
+Educational/demo code only. Not financial, safety, or engineering advice. Use at your own risk. Verify results independently before any production or operational use.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

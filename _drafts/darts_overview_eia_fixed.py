@@ -21,7 +21,7 @@ signalplot.apply(font_family="serif")
 
 @dataclass
 class Config:
-    csv_path: str = "/Users/k.jones/Downloads/medium-export-e6bf40a8b01915d7380f6f547e0dd25ddd791328d4d9fa3a77513e82e662373c/posts/2001-2025 Net_generation_United_States_all_sectors_monthly.csv"
+    csv_path: str = "data/medium-export-e6bf40a8b01915d7380f6f547e0dd25ddd791328d4d9fa3a77513e82e662373c/posts/2001-2025 Net_generation_United_States_all_sectors_monthly.csv"
     freq: str = "MS"
     horizon: int = 12
     n_splits: int = 5

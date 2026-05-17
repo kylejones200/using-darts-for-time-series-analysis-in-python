@@ -175,19 +175,21 @@ def plot_forecast(
     metrics: Dict[str, float] = None,
 ):
     """Plot forecast vs actual"""
-    if plot:
-        fig, ax = plt.subplots(figsize=(12, 6))
+    if not plot:
+        return
 
-        series.plot(ax=ax, label="Actual", color="#4A90A4", linewidth=1.2)
-        forecast.plot(ax=ax, label="Forecast", color="#D4A574", linewidth=1.2)
+    fig, ax = plt.subplots(figsize=(12, 6))
 
-        title_text = title
-        if metrics:
-            title_text += f": MAE = {metrics['mae']:.2f}, MAPE = {metrics['mape']:.2%}"
+    series.plot(ax=ax, label="Actual", color="#4A90A4", linewidth=1.2)
+    forecast.plot(ax=ax, label="Forecast", color="#D4A574", linewidth=1.2)
 
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Value")
-        ax.legend(loc="best")
+    title_text = title
+    if metrics:
+        title_text += f": MAE = {metrics['mae']:.2f}, MAPE = {metrics['mape']:.2%}"
 
-        plt.savefig(output_path, dpi=100, bbox_inches="tight")
-        plt.close()
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Value")
+    ax.legend(loc="best")
+
+    plt.savefig(output_path, dpi=100, bbox_inches="tight")
+    plt.close()

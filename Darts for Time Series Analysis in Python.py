@@ -3,11 +3,8 @@
 Magics and shell lines are commented out. Run with a normal Python interpreter."""
 
 
-
-def main():
-    # --- code cell ---
-
-    # !pip install darts  # Jupyter-only
+def main() -> None:
+    pass
 
 
 if __name__ == "__main__":
