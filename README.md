@@ -2,6 +2,12 @@
 
 This project demonstrates time series forecasting using the Darts library, including ARIMA, Exponential Smoothing, LightGBM, LSTM, NBEATS, and FFT models.
 
+## Business context
+
+Economists and investors watch the **10Y–2Y Treasury spread (T10Y2Y)** because it compresses expectations about growth and policy. Inversion has often preceded recessions, so teams want comparable forecasts—not just a chart—with clear train/holdout discipline.
+
+**Darts** wraps statistical and ML forecasters behind one `TimeSeries` workflow so you can benchmark ARIMA, exponential smoothing, LightGBM, FFT, and optional deep models on the same FRED series without rewriting glue code each time.
+
 ## Article
 
 Medium article: [Using Darts for Time Series Analysis in Python](https://medium.com/@kylejones_47003/using-darts-for-time-series-analysis-in-python-dc92e08c43e5)
@@ -30,12 +36,11 @@ Edit `config.yaml` to customize:
 - Which models to run
 - Output settings
 
-Note: Set `api_key` in config.yaml or use `FRED_API_KEY` environment variable.
+FRED series are loaded via **pandas_datareader** (no API key required).
 
 ## Caveats
 
 - Deep learning models (LSTM, NBEATS) are disabled by default in config.yaml due to longer training times. Enable them by setting `enabled: true`.
-- FRED API requires a free API key from https://fred.stlouisfed.org/docs/api/api_key.html
 - Data is automatically split before scaling to prevent data leakage.
 
 ## Disclaimer
