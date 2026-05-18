@@ -78,39 +78,32 @@ def maybe_load_tbats_csv():
 def main(plot: bool = False):
     cfg = Config()
     ts = load_series(cfg)
-
     results = {}
     preds = {}
-
     mean_mae, (y_true, y_pred) = rolling_origin_eval(
         ts, lambda: ARIMA(p=1, d=1, q=1), cfg.horizon, cfg.n_splits
     )
     results["ARIMA mean MAE"] = mean_mae
     preds["ARIMA"] = (y_true, y_pred)
-
     mean_mae, (y_true, y_pred) = rolling_origin_eval(
         ts, lambda: Theta(), cfg.horizon, cfg.n_splits
     )
     results["Theta mean MAE"] = mean_mae
     preds["Theta"] = (y_true, y_pred)
-
     tbats_df = maybe_load_tbats_csv()
     if tbats_df is not None and not tbats_df.empty:
         tbats_mae = mean_absolute_error(tbats_df["true"], tbats_df["pred"])
         results["TBATS mean MAE (from CSV)"] = tbats_mae
 
     logger.info("\n".join(f"{k}: {v}" for k, v in results.items()))
-
     # Tufte-style final figure: 2024 history, dashed vline at Jan 2025, forecasts/actuals Jan–Aug 2025 only
     start_2024 = pd.Period("2024-01", freq="M").start_time + pd.offsets.MonthBegin(0)
     end_2024 = pd.Period("2024-12", freq="M").start_time + pd.offsets.MonthBegin(0)
     jan_2025 = pd.Period("2025-01", freq="M").start_time + pd.offsets.MonthBegin(0)
     aug_2025 = pd.Period("2025-08", freq="M").start_time + pd.offsets.MonthBegin(0)
-
     s = ts.to_series()
     y_hist = s.loc[start_2024:end_2024]
     y_act = s.loc[jan_2025:aug_2025]
-
     if plot:
         fig, ax = plt.subplots(figsize=(10, 5))
         ax.plot(y_hist.index, y_hist.values, color="#888888", lw=1.5)
@@ -147,7 +140,6 @@ def main(plot: bool = False):
         ax.spines["right"].set_visible(False)
         ax.grid(False)
         ax.set_xlabel("")
-
         # End-of-line labels
         if len(y_hist):
             ax.annotate(

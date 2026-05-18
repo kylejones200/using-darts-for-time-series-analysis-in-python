@@ -1,148 +1,25 @@
 # Forecasting the U.S. Treasury Yield Spread using Darts
 
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(message)s")
-
 import logging
-
-logging.getLogger("py.warnings").setLevel(logging.ERROR)
-
 from datetime import datetime
 
-import matplotlib.pyplot as plt
 import pandas as pd
-import requests
 from darts import TimeSeries
-from darts.dataprocessing.transformers import MissingValuesFiller, Scaler
-from darts.models import (
-    ARIMA,
-    FFT,
-    ExponentialSmoothing,
-    LightGBMModel,
-    NBEATSModel,
-    RNNModel,
-)
-from darts.utils.callbacks import TFMProgressBar
+
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+logging.getLogger("py.warnings").setLevel(logging.ERROR)
+
+
 
 
 # Fetch and clean data from FRED
-def fetch_fred_series(series_id, api_key, start="2000-01-01"):
-    params = {
-        "series_id": series_id,
-        "api_key": api_key,
-        "file_type": "json",
-        "observation_start": start,
-        "observation_end": datetime.now().strftime("%Y-%m-%d"),
-    }
-    url = "https://api.stlouisfed.org/fred/series/observations"
-    r = requests.get(url, params=params)
-    if r.status_code != 200:
-        raise Exception(f"FRED API error {r.status_code}")
-    df = pd.DataFrame(r.json()["observations"])
-    df["date"] = pd.to_datetime(df["date"])
-    df["value"] = pd.to_numeric(df["value"], errors="coerce").ffill()
-    return TimeSeries.from_dataframe(df.sort_values("date"), "date", "value")
+def fetch_fred_series(series_id, start="2000-01-01", end=None):
+    """Fetch FRED data as a Darts TimeSeries via pandas_datareader."""
+    import pandas_datareader.data as web
 
-
-# Plot forecast vs actual
-def plot_forecast(series, forecast, title, filename, plot: bool = False):
-    if not plot:
-        return
-
-    plt.figure(figsize=(12, 6))
-    series.plot(label="Actual")
-    forecast.plot(label="Forecast")
-    plt.title(title)
-    plt.xlabel("Date")
-    plt.ylabel("Spread")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig(filename)
-    plt.show()
-
-
-# Torch kwargs for NBEATS
-def torch_config():
-    return {
-        "pl_trainer_kwargs": {
-            "accelerator": "cpu",
-            "callbacks": [TFMProgressBar(enable_train_bar_only=True)],
-        }
-    }
-
-
-if __name__ == "__main__":
-    import os
-
-    api_key = os.getenv("FRED_API_KEY")
-    if not api_key:
-        raise ValueError(
-            "FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key"
-        )
-    series_id = "T10Y2Y"
-
-    # Get data
-    series = fetch_fred_series(series_id, api_key)
-    series = MissingValuesFiller().transform(series)
-
-    # Split first
-    train, val = series.split_before(pd.Timestamp("2020-01-01"))
-
-    # Scale after split - fit on training data only
-    scaler = Scaler()
-    scaler.fit(train)
-    train_scaled = scaler.transform(train)
-    val_scaled = scaler.transform(val)
-
-    # ARIMA
-    model = ARIMA(1, 1, 1)
-    model.fit(train_scaled)
-    forecast = model.predict(len(val_scaled))
-    forecast = scaler.inverse_transform(forecast)
-    actual = series
-    plot_forecast(actual, forecast, "ARIMA Forecast", "ARIMA.png")
-
-    # Exponential Smoothing
-    model = ExponentialSmoothing()
-    model.fit(train_scaled)
-    forecast = model.predict(len(val_scaled))
-    forecast = scaler.inverse_transform(forecast)
-    plot_forecast(actual, forecast, "Exponential Smoothing", "ExponentialSmoothing.png")
-
-    # LightGBM
-    model = LightGBMModel(lags=30)
-    model.fit(train_scaled)
-    forecast = model.predict(len(val_scaled))
-    forecast = scaler.inverse_transform(forecast)
-    plot_forecast(actual, forecast, "LightGBM Forecast", "LightGBM.png")
-
-    # LSTM
-    model = RNNModel(
-        model="LSTM", input_chunk_length=30, output_chunk_length=7, n_epochs=50
-    )
-    model.fit(train_scaled)
-    forecast = model.predict(len(val_scaled))
-    forecast = scaler.inverse_transform(forecast)
-    plot_forecast(actual, forecast, "LSTM Forecast", "LSTM.png")
-
-    # NBEATS
-    model = NBEATSModel(
-        input_chunk_length=30,
-        output_chunk_length=7,
-        n_epochs=50,
-        random_state=42,
-        **torch_config(),
-    )
-    model.fit(train_scaled, val_series=val_scaled)
-    forecast = model.predict(len(val_scaled))
-    forecast = scaler.inverse_transform(forecast)
-    plot_forecast(actual, forecast, "NBEATS Forecast", "NBEATS.png")
-
-    # FFT
-    model = FFT()
-    model.fit(train_scaled)
-    forecast = model.predict(len(val_scaled))
-    forecast = scaler.inverse_transform(forecast)
-    plot_forecast(actual, forecast, "FFT Forecast", "FFT.png")
+    if end is None:
+        end = datetime.now().strftime("%Y-%m-%d")
+    df = web.DataReader(series_id, "fred", start=start, end=end)
+    df = df.rename(columns={series_id: "value"})
+    df["value"] = pd.to_numeric(df["value"], errors="coerce").ffill().dropna()
+    return TimeSeries.from_dataframe(df.sort_index(), value_cols="value")

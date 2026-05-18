@@ -68,10 +68,8 @@ def rolling_origin_eval(ts: TimeSeries, model_ctor, horizon: int, n_splits: int)
 def main(plot: bool = False):
     cfg = Config()
     ts = load_series(cfg)
-
     results = {}
     preds = {}
-
     mean_mae, (y_true, y_pred) = rolling_origin_eval(
         ts,
         lambda: ExponentialSmoothing(seasonal_periods=cfg.season),
@@ -80,15 +78,12 @@ def main(plot: bool = False):
     )
     results["ExponentialSmoothing mean MAE"] = mean_mae
     preds["ETS"] = (y_true, y_pred)
-
     mean_mae, (y_true, y_pred) = rolling_origin_eval(
         ts, lambda: NaiveSeasonal(K=cfg.season), cfg.horizon, cfg.n_splits
     )
     results["NaiveSeasonal mean MAE"] = mean_mae
     preds["NaiveSeasonal"] = (y_true, y_pred)
-
     logger.info("\n".join(f"{k}: {v}" for k, v in results.items()))
-
     if plot:
         plt.figure(figsize=(9, 4))
         ts.plot(label="history", alpha=0.6)

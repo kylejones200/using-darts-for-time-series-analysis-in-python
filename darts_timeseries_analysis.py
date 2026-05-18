@@ -2,91 +2,77 @@
 #
 # Economists and investors use this as an indicator of market expectations about future economic conditions and monetary policy.
 #
-# FRED provides this data by API. You can request an API key for free.
+# FRED data is loaded via pandas_datareader (no API key required).
 
-import os
+import logging
+import warnings
 from datetime import datetime
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-import requests
 from darts import TimeSeries
-from darts.models import ExponentialSmoothing
+from darts.dataprocessing.transformers import (
+    MissingValuesFiller,
+    Scaler,
+)
+from darts.metrics import mae, mape, r2_score
+from darts.models import ARIMA, FFT, ExponentialSmoothing, LightGBMModel, NBEATSModel, RNNModel
+from darts.utils.callbacks import TFMProgressBar
 
-# FRED API request
+
+def fetch_fred_data(series_id, start_date="2000-01-01", end_date=None):
+    """Fetch FRED observations via pandas_datareader."""
+    import pandas_datareader.data as web
+
+    if end_date is None:
+        end_date = datetime.now().strftime("%Y-%m-%d")
+    raw = web.DataReader(series_id, "fred", start_date, end_date)
+    df = raw.reset_index()
+    date_col = "DATE" if "DATE" in df.columns else df.columns[0]
+    value_col = series_id if series_id in df.columns else df.columns[-1]
+    df = df.rename(columns={date_col: "date", value_col: "value"})
+    df["value"] = pd.to_numeric(df["value"], errors="coerce").ffill()
+    return df.dropna(subset=["value"]).sort_values("date")
+
+
+def fetch_fred_series(series_id="T10Y2Y", start_date="2000-01-01", end_date=None):
+    """Fetch FRED data as a Darts TimeSeries via pandas_datareader."""
+    df = fetch_fred_data(series_id, start_date, end_date)
+    return TimeSeries.from_dataframe(df, "date", "value")
+
+
+# FRED data via pandas_datareader
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-api_key = os.getenv("FRED_API_KEY")
-if not api_key:
-    raise ValueError(
-        "FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key"
-    )
-params = {
-    "series_id": "T10Y2Y",
-    "api_key": api_key,
-    "file_type": "json",
-    "observation_start": "2000-01-01",
-    "observation_end": datetime.now().strftime("%Y-%m-%d"),
-}
-url = "https://api.stlouisfed.org/fred/series/observations"
-response = requests.get(url, params=params)
+series = fetch_fred_series("T10Y2Y")
+# Fit the model and predict the next 10 steps
+model = ExponentialSmoothing()
+model.fit(series)
+forecast = model.predict(10)
+# Plot the results using matplotlib
+plt.figure(figsize=(12, 6))
+series.plot(label="Actual", color="blue")
+forecast.plot(label="Forecast", color="red")
+plt.title("10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity")
+plt.xlabel("Date")
+plt.ylabel("Spread")
+plt.legend()
+plt.grid(True)
+plt.savefig("ExponentialSmoothing.png")
+plt.tight_layout()
+plt.show()
 
-if response.status_code == 200:
-    data = response.json()
-    observations = data["observations"]
-    df = pd.DataFrame(observations)
-    df["date"] = pd.to_datetime(df["date"])
-    df["value"] = pd.to_numeric(df["value"], errors="coerce")
-    df = df.sort_values("date")
-
-    # Create a Darts TimeSeries
-    series = TimeSeries.from_dataframe(df, "date", "value")
-
-    # Fit the model and predict the next 10 steps
-    model = ExponentialSmoothing()
-    model.fit(series)
-    forecast = model.predict(10)
-
-    # Plot the results using matplotlib
-    plt.figure(figsize=(12, 6))
-    series.plot(label="Actual", color="blue")
-    forecast.plot(label="Forecast", color="red")
-
-    plt.title(
-        "10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity"
-    )
-    plt.xlabel("Date")
-    plt.ylabel("Spread")
-    plt.legend()
-    plt.grid(True)
-    plt.savefig("ExponentialSmoothing.png")
-    plt.tight_layout()
-    plt.show()
-
-else:
-    logging.error(f": {response.status_code}")
-    logging.info(response.text)
 
 # # Darts for Time Series Analysis in Python
 
-import logging
 
-logging.disable(logging.CRITICAL)
+warnings.filterwarnings("ignore")
+for _logger_name in ("darts", "matplotlib", "urllib3"):
+    logging.getLogger(_logger_name).setLevel(logging.WARNING)
 
-import matplotlib.pyplot as plt
-import pandas as pd
-from darts.dataprocessing import Pipeline
-from darts.dataprocessing.transformers import (
-    InvertibleMapper,
-    Mapper,
-    MissingValuesFiller,
-    Scaler,
-)
-from darts.metrics import mape
-from darts.models import ExponentialSmoothing
-from darts.utils.timeseries_generation import linear_timeseries
 
 # Fit the model and predict the next 10 steps
 model = ExponentialSmoothing()
@@ -112,118 +98,34 @@ Stuck forecast
 """
 
 # FRED API request (as before)
-import os
-from datetime import datetime
 
-import matplotlib.pyplot as plt
-import pandas as pd
-import requests
-from darts import TimeSeries
-from darts.models import ARIMA
 
-api_key = os.getenv("FRED_API_KEY")
-if not api_key:
-    raise ValueError(
-        "FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key"
-    )
-params = {
-    "series_id": "T10Y2Y",
-    "api_key": api_key,
-    "file_type": "json",
-    "observation_start": "2000-01-01",
-    "observation_end": datetime.now().strftime("%Y-%m-%d"),
-}
-url = "https://api.stlouisfed.org/fred/series/observations"
-response = requests.get(url, params=params)
+series = fetch_fred_series("T10Y2Y")
+# Fit the ARIMA model and predict the next 10 steps
+model = ARIMA(p=1, d=1, q=1)  # You can adjust these parameters
+model.fit(series)
+forecast = model.predict(1000)
+# Plot the results using matplotlib
+plt.figure(figsize=(12, 6))
+series.plot(label="Actual", color="blue")
+forecast.plot(label="Forecast", color="red")
+plt.title("10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity")
+plt.xlabel("Date")
+plt.ylabel("Spread")
+plt.legend()
+plt.grid(False)
+plt.savefig("ARIMA_Forecast.png")
+plt.tight_layout()
+plt.show()
 
-if response.status_code == 200:
-    data = response.json()
-    observations = data["observations"]
-    df = pd.DataFrame(observations)
-    df["date"] = pd.to_datetime(df["date"])
-    df["value"] = pd.to_numeric(df["value"], errors="coerce")
 
-    # Handle missing values by forward filling
-    df["value"] = df["value"].ffill()
+series = fetch_fred_series("T10Y2Y")
 
-    df = df.sort_values("date")
-
-    # Create a Darts TimeSeries
-    series = TimeSeries.from_dataframe(df, "date", "value")
-
-    # Fit the ARIMA model and predict the next 10 steps
-    model = ARIMA(p=1, d=1, q=1)  # You can adjust these parameters
-    model.fit(series)
-    forecast = model.predict(1000)
-
-    # Plot the results using matplotlib
-    plt.figure(figsize=(12, 6))
-    series.plot(label="Actual", color="blue")
-    forecast.plot(label="Forecast", color="red")
-
-    plt.title(
-        "10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity"
-    )
-    plt.xlabel("Date")
-    plt.ylabel("Spread")
-    plt.legend()
-    plt.grid(False)
-    plt.savefig("ARIMA_Forecast.png")
-    plt.tight_layout()
-    plt.show()
-
-else:
-    logging.error(f": {response.status_code}")
-    logging.info(response.text)
-
-import os
-from datetime import datetime
-
-import pandas as pd
-import requests
-from darts import TimeSeries
-
-api_key = os.getenv("FRED_API_KEY")
-if not api_key:
-    raise ValueError(
-        "FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key"
-    )
-params = {
-    "series_id": "T10Y2Y",
-    "api_key": api_key,
-    "file_type": "json",
-    "observation_start": "2000-01-01",
-    "observation_end": datetime.now().strftime("%Y-%m-%d"),
-}
-url = "https://api.stlouisfed.org/fred/series/observations"
-response = requests.get(url, params=params)
-
-if response.status_code == 200:
-    data = response.json()
-    observations = data["observations"]
-    df = pd.DataFrame(observations)
-    df["date"] = pd.to_datetime(df["date"])
-    df["value"] = pd.to_numeric(df["value"], errors="coerce")
-
-    # Handle missing values by forward filling
-    df["value"] = df["value"].ffill()
-
-    df = df.sort_values("date")
-
-    # Create a Darts TimeSeries
-    series = TimeSeries.from_dataframe(df, "date", "value")
-
-else:
-    logging.error(f": {response.status_code}")
-    logging.info(response.text)
 
 """
 ARIMA
 """
 
-import matplotlib.pyplot as plt
-from darts import TimeSeries
-from darts.models import ARIMA
 
 # Fit the ARIMA model and predict the next 30 steps with 1000 samples
 model = ARIMA(p=1, d=1, q=1)  # Adjust these parameters as needed
@@ -244,7 +146,6 @@ plt.tight_layout()
 plt.savefig("ARIMA_Forecast.png")
 plt.show()
 
-from darts.models import ExponentialSmoothing
 
 # Fit the model and predict the next 365 steps
 model = ExponentialSmoothing()
@@ -265,36 +166,8 @@ plt.savefig("ExponentialSmoothing.png")
 plt.tight_layout()
 plt.show()
 
-from datetime import datetime
 
-import matplotlib.pyplot as plt
-import pandas as pd
-import requests
-from darts import TimeSeries
-from darts.models import ARIMA
 
-def fetch_fred_data(series_id, api_key, start_date="2000-01-01"):
-    """Fetch data from FRED API."""
-    params = {
-        "series_id": series_id,
-        "api_key": api_key,
-        "file_type": "json",
-        "observation_start": start_date,
-        "observation_end": datetime.now().strftime("%Y-%m-%d"),
-    }
-    url = "https://api.stlouisfed.org/fred/series/observations"
-    response = requests.get(url, params=params)
-
-    if response.status_code == 200:
-        data = response.json()
-        observations = data["observations"]
-        df = pd.DataFrame(observations)
-        df["date"] = pd.to_datetime(df["date"])
-        df["value"] = pd.to_numeric(df["value"], errors="coerce")
-        df["value"] = df["value"].ffill()  # Handle missing values
-        df = df.sort_values("date")
-        return TimeSeries.from_dataframe(df, "date", "value")
-    raise Exception(f"API request failed with status code {response.status_code}")
 
 def build_and_forecast(series, forecast_horizon=30, num_samples=1000):
     """Build ARIMA model and generate forecast."""
@@ -303,17 +176,15 @@ def build_and_forecast(series, forecast_horizon=30, num_samples=1000):
     forecast = model.predict(n=forecast_horizon, num_samples=num_samples)
     return forecast
 
+
 def visualize_forecast(series, forecast, title, filename, plot: bool = False):
     """Visualize the original series and forecast."""
     if not plot:
         return
 
     plt.figure(figsize=(12, 6))
-    series[-365:].plot(
-        label="Actual", color="blue"
-    )  # Plot last year of actual data
+    series[-365:].plot(label="Actual", color="blue")  # Plot last year of actual data
     forecast.plot(label="Forecast", color="red")
-
     plt.title(title)
     plt.xlabel("Date")
     plt.ylabel("Spread")
@@ -323,26 +194,16 @@ def visualize_forecast(series, forecast, title, filename, plot: bool = False):
     plt.tight_layout()
     plt.show()
 
+
 # Main execution
 if __name__ == "__main__":
-    import os
-
-    api_key = os.getenv("FRED_API_KEY")
-    if not api_key:
-        raise ValueError(
-            "FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key"
-        )
     series_id = "T10Y2Y"
-
     try:
-        # Step 1: Fetch data
-        series = fetch_fred_data(series_id, api_key)
+        series = fetch_fred_series(series_id)
         logging.info("Data fetched successfully.")
-
         # Step 2: Build model and forecast
         forecast = build_and_forecast(series)
         logging.info("Forecast generated successfully.")
-
         # Step 3: Visualize results
         visualize_forecast(
             series,
@@ -351,33 +212,19 @@ if __name__ == "__main__":
             "ARIMA_Forecast.png",
         )
         logging.info("Visualization completed and saved.")
-
         logging.info("\nForecast for the next 30 periods:")
         logging.info(forecast)
 
     except Exception as e:
         logging.info(f"An error occurred: {str(e)}")
 
-from datetime import datetime
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import requests
-from darts import TimeSeries
-from darts.dataprocessing.transformers import MissingValuesFiller, Scaler
-from darts.metrics import r2_score
-from darts.models import NBEATSModel
-from darts.utils.callbacks import TFMProgressBar
 
-import logging
 
-logging.disable(logging.CRITICAL)
+warnings.filterwarnings("ignore")
+for _logger_name in ("darts", "matplotlib", "urllib3"):
+    logging.getLogger(_logger_name).setLevel(logging.WARNING)
 
-from datetime import datetime
-
-import pandas as pd
-import requests
 
 def generate_torch_kwargs():
     return {
@@ -386,6 +233,7 @@ def generate_torch_kwargs():
             "callbacks": [TFMProgressBar(enable_train_bar_only=True)],
         }
     }
+
 
 def display_forecast(
     pred_series, ts_transformed, forecast_type, start_date=None, plot: bool = False
@@ -409,36 +257,23 @@ def display_forecast(
     plt.savefig(f"NBEATS_{forecast_type}_Forecast.png")
     plt.show()
 
+
 if __name__ == "__main__":
-    import os
-
-    api_key = os.getenv("FRED_API_KEY")
-    if not api_key:
-        raise ValueError(
-            "FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key"
-        )
     series_id = "T10Y2Y"
-
-    # Fetch data from FRED
-    df = fetch_fred_data(series_id, api_key)
+    df = fetch_fred_data(series_id)
     logging.info("Data fetched successfully.")
-
     # Create TimeSeries
     series = TimeSeries.from_dataframe(df, "date", "value")
-
     # Handle missing values
     filler = MissingValuesFiller()
     series_filled = filler.transform(series)
-
     # Split the data first
     train, val = series_filled.split_before(pd.Timestamp("2020-01-01"))
-
     # Scale after split - fit on training data only
     scaler = Scaler()
     scaler.fit(train)
     train = scaler.transform(train)
     val = scaler.transform(val)
-
     # Create and train the model
     model = NBEATSModel(
         input_chunk_length=30,
@@ -448,7 +283,6 @@ if __name__ == "__main__":
         **generate_torch_kwargs(),
     )
     model.fit(train, val_series=val)
-
     # Make predictions - scale full series for historical forecasts
     series_scaled = scaler.transform(series_filled)
     historic_predictions = model.historical_forecasts(
@@ -459,14 +293,11 @@ if __name__ == "__main__":
         retrain=False,
         verbose=True,
     )
-
     future_predictions = model.predict(n=30)
-
     # Inverse transform the predictions and actual data
     historic_predictions = scaler.inverse_transform(historic_predictions)
     future_predictions = scaler.inverse_transform(future_predictions)
     series_original = series_filled
-
     # Display forecasts
     display_forecast(
         historic_predictions,
@@ -475,33 +306,21 @@ if __name__ == "__main__":
         start_date=pd.Timestamp("2020-01-01"),
     )
     display_forecast(future_predictions, series_original, "future")
-
     logging.info("Forecasting completed and visualizations saved.")
 
 """
 works
 """
 
-from datetime import datetime
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import requests
-from darts import TimeSeries
-from darts.dataprocessing.transformers import MissingValuesFiller, Scaler
-from darts.metrics import mae, r2_score
-from darts.models import FFT, NBEATSModel
-from darts.utils.callbacks import TFMProgressBar
 
-import logging
 
-logging.disable(logging.CRITICAL)
+warnings.filterwarnings("ignore")
+for _logger_name in ("darts", "matplotlib", "urllib3"):
+    logging.getLogger(_logger_name).setLevel(logging.WARNING)
 
-from datetime import datetime
 
-import pandas as pd
-import requests
+
 
 def plot_forecast(train, val, pred, title, plot: bool = False):
     if plot:
@@ -519,37 +338,24 @@ def plot_forecast(train, val, pred, title, plot: bool = False):
         plt.show()
     logging.info(f"MAE: {mae(pred, val):.4f}")
 
+
 if __name__ == "__main__":
-    import os
-
-    api_key = os.getenv("FRED_API_KEY")
-    if not api_key:
-        raise ValueError(
-            "FRED_API_KEY environment variable not set. Please set it with: export FRED_API_KEY=your_key"
-        )
     series_id = "T10Y2Y"
-
-    # Fetch data from FRED
-    df = fetch_fred_data(series_id, api_key)
+    df = fetch_fred_data(series_id)
     logging.info("Data fetched successfully.")
-
     # Resample the data to daily frequency, forward filling missing values
     df = df.resample("D").ffill()
-
     # Create TimeSeries
     filler = MissingValuesFiller()
     scaler = Scaler()
     series = filler.transform(
         TimeSeries.from_dataframe(df, value_cols=["value"], freq="D")
     ).astype(np.float32)
-
     # Split the data
     train, val = series.split_after(pd.Timestamp("2020-01-01"))
-
     train_scaled = scaler.fit_transform(train)
     val_scaled = scaler.transform(val)
     series_scaled = scaler.transform(series)
-
     # NBEATS Model
     model_name = "nbeats_run"
     model_nbeats = NBEATSModel(
@@ -570,41 +376,33 @@ if __name__ == "__main__":
         **generate_torch_kwargs(),
     )
     model_nbeats.fit(train_scaled, val_series=val_scaled)
-
     # Make predictions with NBEATS
     nbeats_pred = model_nbeats.predict(len(val_scaled))
     nbeats_pred = scaler.inverse_transform(nbeats_pred)
     plot_forecast(train, val, nbeats_pred, "NBEATS Forecast")
-
     # FFT Model examples
     # Example 1: Basic FFT
     model_fft = FFT(required_matches=set(), nr_freqs_to_keep=None)
     model_fft.fit(train)
     fft_pred = model_fft.predict(len(val))
     plot_forecast(train, val, fft_pred, "Basic FFT Forecast")
-
     # Example 2: FFT with all frequencies
     model_fft_all = FFT(nr_freqs_to_keep=None)
     model_fft_all.fit(train)
     fft_all_pred = model_fft_all.predict(len(val))
     plot_forecast(train, val, fft_all_pred, "FFT Forecast (All Frequencies)")
-
     # Example 3: FFT with limited frequencies
     model_fft_limited = FFT(nr_freqs_to_keep=20)
     model_fft_limited.fit(train)
     fft_limited_pred = model_fft_limited.predict(len(val))
     plot_forecast(train, val, fft_limited_pred, "FFT Forecast (Limited Frequencies)")
-
     # Example 4: FFT with polynomial trend
     model_fft_trend = FFT(trend="poly")
     model_fft_trend.fit(train)
     fft_trend_pred = model_fft_trend.predict(len(val))
     plot_forecast(train, val, fft_trend_pred, "FFT Forecast with Polynomial Trend")
-
     logging.info("Forecasting completed and visualizations saved.")
 
-import pandas as pd
-from darts import TimeSeries
 
 # Create a Pandas DataFrame
 date_range = pd.date_range(start="2023-01-01", periods=50, freq="D")
@@ -617,7 +415,6 @@ series.head()
 """Simple Forecasting with Darts
 Darts supports traditional methods like Exponential Smoothing and ARIMA for quick, interpretable forecasts.
 Exponential Smoothing"""
-from darts.models import ExponentialSmoothing
 
 # Fit the model and predict the next 10 steps
 model = ExponentialSmoothing()
@@ -628,7 +425,6 @@ forecast = model.predict(10)
 series.plot(label="Actual")
 forecast.plot(label="Forecast")
 """ARIMA"""
-from darts.models import ARIMA
 
 # Fit the ARIMA model
 model = ARIMA(1, 1, 1)
@@ -639,11 +435,10 @@ forecast = model.predict(10)
 series.plot(label="Actual")
 forecast.plot(label="Forecast")
 
-"""The autoARIMA implementations in other tools like statsmodels are easier to use than Darts. 
+"""The autoARIMA implementations in other tools like statsmodels are easier to use than Darts.
 Machine Learning Models in Darts
 But that is just the start. Darts can also do more advanced forecasting with machine learning models like Random Forests and LightGBM.
 LightGBM"""
-from darts.models import LightGBMModel
 
 # Split data into train and validation
 train, val = series.split_before(0.8)
@@ -657,7 +452,6 @@ forecast.plot(label="Forecast")
 """Deep Learning Models in Darts
 Darts includes state-of-the-art deep learning models like LSTMs, N-BEATS, and transformers for handling complex patterns.
 LSTM"""
-from darts.models import RNNModel
 
 # Fit an LSTM model
 model = RNNModel(
